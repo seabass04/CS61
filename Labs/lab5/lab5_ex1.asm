@@ -1,0 +1,187 @@
+;=================================================
+; Name: Sebastian Garca
+; Email: Sgarc133@ucr.edu
+; 
+; Lab: lab 5, ex 1
+; Lab section: 
+; TA: 
+; 
+;=================================================
+
+.ORIG x3000
+;------------
+;INSTRUCTIONS
+;------------
+	LD R3, DEC_1
+    LD R4, DEC_10
+    LD R5, ARRAY_PTR
+    
+    
+    DO_WHILE_LOOP
+		STR R3, R5, #0
+		ADD R3, R3, R3
+		ADD R5, R5, #1 
+		
+		ADD R4, R4, #-1
+	BRp DO_WHILE_LOOP
+	
+	ADD R5, R5, #-4
+	LDR R2, R5, #0
+
+	ADD R5, R5, #-6
+	ADD R4, R4, #10
+	DO_WHILE_LOOP2
+		;LDR R0, R5, #0 		;subroutine
+		LDR R1, R5, #0
+		JSR CONVERT_TO_16_BIT_3200
+		OUT
+		ADD R5, R5, #1
+		
+		ADD R4, R4, #-1
+	BRp DO_WHILE_LOOP2
+	
+	
+HALT
+
+;----------
+;LOCAL DATA
+;-----------
+	DEC_1 .FILL #1
+	DEC_10 .FILL #10
+	ARRAY_PTR .FILL ARRAY
+	
+.orig x4000
+	ARRAY .BLKW #10
+	
+.end
+
+;-------------------------------------
+;subroutine: CONVERT_TO_16_BIT_3200
+;Input (R5): value to be converted 
+;Post condition:
+;Retunb value: retruns 16bit binary for input
+;------------------------------------------
+
+
+.ORIG x3200			; Program begins here
+
+CONVERT_TO_16_BIT_3200
+;---------------
+;Rigister Backup
+;---------------
+	ST R0, BACKUP_R0_3200
+	ST R1, BACKUP_R1_3200
+	ST R2, BACKUP_R2_3200
+	ST R4, BACKUP_R4_3200
+	ST R6, BACKUP_R6_3200
+	ST R7, BACKUP_R7_3200
+
+;------------
+;Instructions
+;-------------
+	;LD R6, Value_addr		; R6 <-- pointer to value to be displayed as binary
+	;LDR R1, R6, #0			; R1 <-- value to be displayed as binary 
+;-------------------------------
+;INSERT CODE STARTING FROM HERE
+;--------------------------------
+	LD R2, MAIN_COUNT
+	LD R4, SPACE_COUNT	
+	
+	WHILE_13p
+		ADD R1, R1, #0			;checks if negatives and goes to print 
+		BRn OUT_ONE				;checks if negatives and goes to print 
+
+		OUT_ZERO
+			LD R0, ZERO			;load and output 0
+			OUT
+			ADD R2, R2, #-1		;subtract 1 from main count
+			BRz END_WHILE_13p	;if 0, done with all bits so exit
+			ADD R1, R1, R1		;shift bits to left
+			ADD R4, R4, #-1     ;subtract 1 from space counter 
+			BRz PRINT_SPACE		;if 0, need a space
+			ADD R4, R4, #0	    ;since it dosnt need a space, 
+			Brp WHILE_13p		;returns to top
+			
+		OUT_ONE
+			LD R0, ONE			;load and output 1
+			OUT
+			ADD R2, R2, #-1		;subtract 1 from main count
+			BRz END_WHILE_13p	;if 0, done with all bits so exit
+			ADD R1, R1, R1		;shift bits to left
+			ADD R4, R4, #-1     ;subtract 1 from space counter 
+			BRp WHILE_13p	    ;if 0, need a space
+			
+		PRINT_SPACE
+			LD R0, SPACE		;Load and output space
+			OUT
+			ADD R4, R4, #4		;reset space couter to 4
+			;ADD R1, R1, R1		;shift bits to left
+			ADD R2, R2, #0		;goes back to top
+			BRp WHILE_13p
+			
+	END_WHILE_13p
+
+	LD R0, NEW_LINE				;Load and print new line
+	OUT
+
+;HALT
+
+
+;-----------------
+;Restore registers
+;-----------------
+LD R0, BACKUP_R0_3200
+LD R1, BACKUP_R1_3200
+LD R2, BACKUP_R2_3200
+LD R4, BACKUP_R4_3200
+LD R6, BACKUP_R6_3200
+LD R7, BACKUP_R7_3200
+
+RET
+
+
+;--------------
+;subroutine data
+;---------------
+	BACKUP_R0_3200		.BLKW #1
+	BACKUP_R1_3200		.BLKW #1
+	BACKUP_R2_3200		.BLKW #1
+	BACKUP_R4_3200		.BLKW #1
+	BACKUP_R6_3200		.BLKW #1
+	BACKUP_R7_3200		.BLKW #1
+
+;---------------	
+;Data
+;---------------
+	;Value_addr	.FILL xB800	; The address where value to be displayed is stored
+
+	MAIN_COUNT	.FILL #16	;Stores 16 to count down 16 bits
+	ZERO	.FILL #48		;Stores 0
+	ONE		.FILL #49		;Stores 1
+	SPACE	.FILL #32		;Stores a space
+	NEW_LINE	.FILL #10	;Stores a new line 
+	SPACE_COUNT	.FILL #4	;Stores 4 to count down spaces
+
+.ORIG xB800					; Remote data
+	;Value .FILL x73A2			; <----!!!NUMBER TO BE DISPLAYED AS BINARY!!! Note: label is redundant.
+
+
+;---------------	
+;END of PROGRAM
+;---------------	
+.END
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
